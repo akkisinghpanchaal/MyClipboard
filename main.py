@@ -5,7 +5,7 @@
 import pickle
 import tkinter as tk
 import os
-from tkinter import messagebox
+from tkinter import messagebox, Scrollbar, RIGHT, Y, BOTTOM, X
 import pyperclip
 
 import threading
@@ -39,11 +39,15 @@ class Clipboard:
         self.cwd = "/home/pooja/PycharmProjects/Clipboard_1/"
         self.data_file_path = self.cwd + self._get_data_file()
 
-        self.window = tk.Tk()
+        self.window = tk.Tk(className='MyClipboardApp')
         self.window.geometry("700x300")
         self.window.title("Clipboard v1.0")
+        # self.window.iconbitmap('/home/pooja/PycharmProjects/Clipboard_1/clipboard2')
+        appicon = tk.Image("photo", file='/home/pooja/PycharmProjects/Clipboard_1/clipboard.png')
+        self.window.tk.call('wm', 'iconphoto', self.window._w, appicon)
         self.show_win = None
         self.data = self._get_data()
+        # print(self.data)
         self.show_frame = tk.Frame(self.window).grid()
 
         self.last_saved_string = tk.StringVar(self.window)
@@ -84,12 +88,22 @@ class Clipboard:
         pyperclip.copy(val)
 
     def _show_clips(self):
-        self.show_win = tk.Tk()
-        self.show_win.geometry("700x300")
+        if self.show_win is not None and self.show_win.winfo_exists():
+            self.show_win.lift()
+            return
+        self.show_win = tk.Toplevel(self.window)
         self.show_win.title("Your Clips")
-        i = 0
-        for name, val in self.data.items():
-            tk.Button(self.show_win, text=f"{name}", command=lambda arg=val: self._copy_to_clipboard(arg)).grid()
+        self.show_win.grid_rowconfigure(0, weight=1)
+        self.show_win.grid_columnconfigure(0, weight=1)
+        clipnumber = 0
+        percol = 5
+        for name, val in sorted(self.data.items(), key=lambda x: x[0].lower()):
+            btn = tk.Button(self.show_win,
+                            text=f"{name}",
+                            command=lambda arg=val: self._copy_to_clipboard(arg)).grid(row=(clipnumber % percol),
+                                                                                       column=(clipnumber // percol),
+                                                                                       padx=10)
+            clipnumber += 1
         self.show_win.mainloop()
 
     def _on_closing(self):
@@ -123,8 +137,6 @@ class Clipboard:
         self._start_clipboard()
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     cb = Clipboard()
     cb.start()
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
