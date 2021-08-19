@@ -36,8 +36,8 @@ class SaveRoutine():
 class Clipboard:
     def __init__(self):
         self.mode = __CLIPBOARD_MODE__
-        self.cwd = "/home/pooja/PycharmProjects/Clipboard_1/"
-        self.data_file_path = self.cwd + self._get_data_file()
+        self.cwd = os.getcwd()
+        self.data_file_path = os.path.join(self.cwd, self._get_data_file())
         self.entry_name = None
         self.entry_value = None
         self.entry_var = None
@@ -45,8 +45,7 @@ class Clipboard:
         self.window = tk.Tk(className='MyClipboardApp')
         self.window.geometry("700x300")
         self.window.title("Clipboard v1.0")
-        # self.window.iconbitmap('/home/pooja/PycharmProjects/Clipboard_1/clipboard2')
-        appicon = tk.Image("photo", file='/home/pooja/PycharmProjects/Clipboard_1/clipboard.png')
+        appicon = tk.Image("photo", file=os.path.join(self.cwd, 'clipboard.png'))
         self.window.tk.call('wm', 'iconphoto', self.window._w, appicon)
         self.show_win = None
         self.data = self._get_data()
