@@ -5,7 +5,7 @@
 import pickle
 import tkinter as tk
 import os
-from tkinter import messagebox, Scrollbar, RIGHT, Y, BOTTOM, X
+from tkinter import messagebox, Scrollbar, RIGHT, Y, BOTTOM, X, StringVar, END
 import pyperclip
 
 import threading
@@ -38,7 +38,10 @@ class Clipboard:
         self.mode = __CLIPBOARD_MODE__
         self.cwd = "/home/pooja/PycharmProjects/Clipboard_1/"
         self.data_file_path = self.cwd + self._get_data_file()
-
+        self.entry_name = None
+        self.entry_value = None
+        self.entry_var = None
+        self.inp_name_var = None
         self.window = tk.Tk(className='MyClipboardApp')
         self.window.geometry("700x300")
         self.window.title("Clipboard v1.0")
@@ -81,22 +84,36 @@ class Clipboard:
             return
         else:
             self.data[name] = value
+        self.entry_name.delete(0, END)
+        self.entry_value.delete(0, END)
+        self._show_clips()
+        # self.inp_name_var.set('')
+        # self.entry_var.set('')
         print(self.data)
 
     def _copy_to_clipboard(self, val):
         print(val)
         pyperclip.copy(val)
 
+    def _on_closing_show_win(self):
+        self.show_win.destroy()
+        self.show_win = None
+
     def _show_clips(self):
-        if self.show_win is not None and self.show_win.winfo_exists():
-            self.show_win.lift()
-            return
-        self.show_win = tk.Toplevel(self.window)
-        self.show_win.title("Your Clips")
-        self.show_win.grid_rowconfigure(0, weight=1)
-        self.show_win.grid_columnconfigure(0, weight=1)
+        if not self.show_win:
+            self.show_win = tk.Toplevel(self.window)
+            self.show_win.title("Your Clips")
+            self.show_win.grid_rowconfigure(0, weight=1)
+            self.show_win.grid_columnconfigure(0, weight=1)
+            self.show_win.protocol("WM_DELETE_WINDOW", self._on_closing_show_win)
+
         clipnumber = 0
         percol = 5
+
+        # clean all the widgets form the window
+        for widget in self.show_win.winfo_children():
+            widget.destroy()
+
         for name, val in sorted(self.data.items(), key=lambda x: x[0].lower()):
             btn = tk.Button(self.show_win,
                             text=f"{name}",
@@ -104,6 +121,8 @@ class Clipboard:
                                                                                        column=(clipnumber // percol),
                                                                                        padx=10)
             clipnumber += 1
+
+        self.show_win.lift()
         self.show_win.mainloop()
 
     def _on_closing(self):
@@ -118,13 +137,16 @@ class Clipboard:
     def _start_clipboard(self):
         input_frame = tk.Frame(self.window)
         label1 = tk.Label(self.window, text="Name:\t").grid(row=0, column=0)
-        inp_name_var = tk.StringVar(self.window)
-        entry_name = tk.Entry(self.window, textvariable=inp_name_var).grid(row=0, column=1)
+        self.inp_name_var = tk.StringVar(self.window)
+        self.entry_name = tk.Entry(self.window, textvariable=self.inp_name_var)
+        self.entry_name.grid(row=0, column=1)
         label1 = tk.Label(self.window, text="Text:\t").grid(row=1, column=0)
-        entry_var = tk.StringVar(self.window)
-        entry_value = tk.Entry(self.window, textvariable=entry_var).grid(row=1, column=1)
+        self.entry_var = tk.StringVar(self.window)
+        self.entry_value = tk.Entry(self.window, textvariable=self.entry_var)
+        self.entry_value.grid(row=1, column=1)
+
         btn = tk.Button(self.window, text="Add Clip!",
-                        command=lambda: self._add_clip(inp_name_var.get(), entry_var.get())).grid(row=2)
+                        command=lambda: self._add_clip(self.inp_name_var.get(), self.entry_var.get())).grid(row=2)
         show_btn = tk.Button(self.window, text="Show Clips!", command=lambda: self._show_clips()).grid()
         show_btn = tk.Button(self.window, text="Save Clips!", command=lambda: self._save_data()).grid()
         last_saved_info = tk.Label(self.window, textvariable=self.last_saved_string).grid()
