@@ -36,7 +36,7 @@ class SaveRoutine():
 class Clipboard:
     def __init__(self):
         self.mode = __CLIPBOARD_MODE__
-        self.cwd = os.getcwd()
+        self.cwd = os.path.dirname(os.path.realpath(__file__))
         self.data_file_path = os.path.join(self.cwd, self._get_data_file())
         self.entry_name = None
         self.entry_value = None
