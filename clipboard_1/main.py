@@ -122,7 +122,8 @@ class Clipboard:
             # build a delete method for this clip
             def func(a=name, b=btn_frame):
                 answer = askyesno(title='Confirm delete?',
-                                  message='Are you sure?')
+                                  message='Are you sure?',
+                                  parent=self.show_win)
                 if answer:
                     print(f"deleting {a} with value\n{self.data[a]}")
                     del self.data[a]
