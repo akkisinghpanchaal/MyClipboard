@@ -3,9 +3,11 @@
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 import pickle
+import tkinter
 import tkinter as tk
 import os
 from tkinter import messagebox, Scrollbar, RIGHT, Y, BOTTOM, X, StringVar, END
+from tkinter.messagebox import askyesno
 import pyperclip
 
 import threading
@@ -114,11 +116,29 @@ class Clipboard:
             widget.destroy()
 
         for name, val in sorted(self.data.items(), key=lambda x: x[0].lower()):
-            btn = tk.Button(self.show_win,
-                            text=f"{name}",
-                            command=lambda arg=val: self._copy_to_clipboard(arg)).grid(row=(clipnumber % percol),
-                                                                                       column=(clipnumber // percol),
-                                                                                       padx=10)
+            btn_frame = tk.Frame(self.show_win)
+            btn = tk.Button(btn_frame, text=f"{name}", command=lambda arg=val: self._copy_to_clipboard(arg))
+
+            # build a delete method for this clip
+            def func(a=name, b=btn_frame):
+                answer = askyesno(title='Confirm delete?',
+                                  message='Are you sure?')
+                if answer:
+                    print(f"deleting {a} with value\n{self.data[a]}")
+                    del self.data[a]
+                    b.destroy()
+
+            btn_del = tk.Button(btn_frame,
+                                text="X",
+                                bg='red',
+                                fg='white',
+                                command=func,
+                                height=0,
+                                width=0
+                                )
+            btn.grid(row=0, column=0)
+            btn_del.grid(row=0, column=1)
+            btn_frame.grid(row=(clipnumber % percol), column=(clipnumber // percol), padx=10)
             clipnumber += 1
 
         self.show_win.lift()
